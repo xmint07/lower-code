@@ -1,13 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import { useComponents } from "../../stores/component";
 import { Button, Space } from "antd";
+import ComponentTree from "./components/component-tree";
 
 const Header: React.FC = () => {
   const { mode, setMode, setCurComponentId } = useComponents();
+  const [open, setOpen] = useState(false);
   return (
     <div className="flex justify-end w-[100%] px-[24px]">
-      <Space>
-        {mode === "edit" && (
+      {mode === "edit" && (
+        <Space>
           <Button
             type="primary"
             onClick={() => {
@@ -17,7 +19,11 @@ const Header: React.FC = () => {
           >
             预览
           </Button>
-        )}
+          <Button onClick={() => setOpen(true)}>查看大纲</Button>
+        </Space>
+      )}
+
+      <Space>
         {mode === "preview" && (
           <Button
             onClick={() => {
@@ -29,6 +35,7 @@ const Header: React.FC = () => {
           </Button>
         )}
       </Space>
+      <ComponentTree open={open} onCancel={() => setOpen(false)} />
     </div>
   );
 };

@@ -1,10 +1,10 @@
-import { Button } from "antd";
 import React, { useEffect, useRef } from "react";
 import { useDrop } from "react-dnd";
+import SelectedMask from "../../common/selected-mask";
+import Space from "../../components/space";
 import { ItemType } from "../../item-type";
 import { useComponents } from "../../stores/component";
-import Space from "../../components/space";
-import SelectedMask from "../../common/selected-mask";
+import { Button } from "antd";
 
 interface Component {
   id: number;
@@ -17,9 +17,11 @@ const ComponentMap: { [key: string]: any } = {
   Button: Button,
   Space: Space,
 };
+
 const Stage: React.FC = () => {
   const { components, curComponentId, setCurComponentId } = useComponents();
   const selectedMaskRef: any = useRef(null);
+  const componentRefs = useRef<any>({});
   useEffect(() => {
     const createMask = (e: Event) => {
       const path = e.composedPath() as Element[];
@@ -52,8 +54,10 @@ const Stage: React.FC = () => {
       selectedMaskRef.current.upadatePosition();
     }
   }, [components]);
+
   const renderComponent = (components: Component[]): React.ReactNode => {
     return components.map((component) => {
+      console.log("component :>> ", component);
       if (!ComponentMap[component.name]) {
         return null;
       }
