@@ -3,8 +3,8 @@ import { useDrop } from "react-dnd";
 import SelectedMask from "../../common/selected-mask";
 import Space from "../../components/space";
 import { ItemType } from "../../item-type";
-import { useComponents } from "../../stores/component";
-import { Button } from "antd";
+import { useComponentsStore } from "../../stores/component";
+import Button from "../../components/Button";
 
 interface Component {
   id: number;
@@ -19,9 +19,8 @@ const ComponentMap: { [key: string]: any } = {
 };
 
 const Stage: React.FC = () => {
-  const { components, curComponentId, setCurComponentId } = useComponents();
+  const { components, curComponentId, setCurComponentId } = useComponentsStore();
   const selectedMaskRef: any = useRef(null);
-  const componentRefs = useRef<any>({});
   useEffect(() => {
     const createMask = (e: Event) => {
       const path = e.composedPath() as Element[];
@@ -54,13 +53,33 @@ const Stage: React.FC = () => {
       selectedMaskRef.current.upadatePosition();
     }
   }, [components]);
-
+  const formatProps = (component: Component) => {
+    console.log("component.props :>> ", component.props);
+    const props = Object.keys(component.props || {}).reduce<any>(
+      (prev, cur) => {
+        if (typeof component.props[cur] === "object") {
+          if (component.props[cur]?.type === "static") {
+            prev[cur] = component.props[cur].value;
+          } else if (component.props[cur]?.type === "variable") {
+            const variableName = component.props[cur]?.value;
+            prev[cur] = `\${${variableName}}`;
+          }
+        } else {
+          prev[cur] = component.props[cur];
+        }
+        return prev;
+      },
+      {}
+    );
+    return props;
+  };
   const renderComponent = (components: Component[]): React.ReactNode => {
     return components.map((component) => {
-      console.log("component :>> ", component);
       if (!ComponentMap[component.name]) {
         return null;
       }
+      const props = formatProps(component);
+      console.log("props :>> ", props);
       if (ComponentMap[component.name]) {
         return React.createElement(
           ComponentMap[component.name],
@@ -69,6 +88,8 @@ const Stage: React.FC = () => {
             id: component.id,
             "data-component-id": component.id,
             ...component.props,
+            ...props,
+            useDrop,
           },
           component.props.children || renderComponent(component.children || [])
         );
@@ -95,7 +116,9 @@ const Stage: React.FC = () => {
       style={{ border: canDrop ? "1px solid #ccc" : "none" }}
       className="p-[24px] h-[100%] stage"
     >
-      {renderComponent(components)}
+      <React.Suspense fallback="loading...">
+        {renderComponent(components)}
+      </React.Suspense>
       {curComponentId && (
         <SelectedMask
           componentId={curComponentId}

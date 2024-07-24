@@ -1,10 +1,10 @@
 import React from "react";
 import ComponentItem from "../../common/component-item";
 import { ItemType } from "../../item-type";
-import { useComponents } from "../../stores/component";
+import { useComponentsStore } from "../../stores/component";
 
 const Material: React.FC = () => {
-  const { addComponent } = useComponents();
+  const { addComponent } = useComponentsStore();
   const onDragEnd = (dropResult: any) => {
     addComponent(
       {

@@ -1,8 +1,9 @@
 import { Collapse, Input, Select, TreeSelect } from "antd";
 import React, { useState } from "react";
 import { ItemType } from "../../../item-type";
-import { Component, useComponents } from "../../../stores/component";
+import { Component, useComponentsStore } from "../../../stores/component";
 import { getComponentById } from "../../../utils/utils";
+import { useVariablesStore } from "../../../stores/variable";
 
 const componentEventMap = {
   [ItemType.Button]: [
@@ -26,10 +27,11 @@ const componetMethodsMap = {
 };
 const ComponentEvent: React.FC = () => {
   const { curComponent, curComponentId, components, updateComponentProps } =
-    useComponents();
+    useComponentsStore();
   const [selectedComponent, setSelectedComponent] = useState<Component | null>(
     null
   );
+  const { variables } = useVariablesStore();
   const typeChange = (eventName: string, value: string) => {
     if (!curComponentId) return;
     updateComponentProps(curComponentId, { [eventName]: { type: value } });
@@ -84,6 +86,43 @@ const ComponentEvent: React.FC = () => {
       },
     });
   };
+
+  const scriptChange = (eventName: string, value: string) => {
+    if (!curComponentId) return null;
+    updateComponentProps(curComponentId, {
+      [eventName]: {
+        ...curComponent?.props?.[eventName],
+        config: {
+          ...curComponent?.props?.[eventName]?.config,
+          script: value,
+        },
+      },
+    });
+  };
+  const variableChange = (eventName: string, value: string) => {
+    if (!curComponentId) return null;
+    updateComponentProps(curComponentId, {
+      [eventName]: {
+        ...curComponent?.props?.[eventName],
+        config: {
+          ...curComponent?.props?.[eventName]?.config,
+          variable: value,
+        },
+      },
+    });
+  };
+  const variableValueChange = (eventName: string, value: string) => {
+    if (!curComponentId) return null;
+    updateComponentProps(curComponentId, {
+      [eventName]: {
+        ...curComponent?.props?.[eventName],
+        config: {
+          ...curComponent?.props?.[eventName]?.config,
+          value,
+        },
+      },
+    });
+  };
   if (!curComponent) return null;
   return (
     <div className="px-[12px]">
@@ -99,6 +138,8 @@ const ComponentEvent: React.FC = () => {
                     options={[
                       { label: "显示提示", value: "showMessage" },
                       { label: "组件方法", value: "componentFunction" },
+                      { label: "设置变量", value: "setVariable" },
+                      { label: "脚本", value: "execScript" },
                     ]}
                     onChange={(value) => {
                       typeChange(setting.name, value);
@@ -204,6 +245,73 @@ const ComponentEvent: React.FC = () => {
                       </div>
                     </div>
                   )}
+                </div>
+              )}
+              {curComponent?.props?.[setting.name]?.type === "setVariable" && (
+                <div className="flex flex-col gap-[12px] mt-[12px]">
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 10 }}
+                  >
+                    <div>变量：</div>
+                    <div>
+                      <Select
+                        style={{ width: 160 }}
+                        options={variables.map((item) => ({
+                          label: item.remark,
+                          value: item.name,
+                        }))}
+                        value={
+                          curComponent?.props?.[setting.name]?.config?.variable
+                        }
+                        onChange={(value) => {
+                          variableChange(setting.name, value);
+                        }}
+                      />
+                    </div>
+                  </div>
+                  {curComponent?.props?.[setting.name]?.type ===
+                    "setVariable" && (
+                    <div
+                      style={{ display: "flex", alignItems: "center", gap: 10 }}
+                    >
+                      <div>值：</div>
+                      <div>
+                        <Input
+                          value={
+                            curComponent?.props?.[setting.name]?.config?.value
+                          }
+                          onChange={(e) => {
+                            variableValueChange(setting.name, e.target.value);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              {curComponent?.props?.[setting.name]?.type === "execScript" && (
+                <div className="flex flex-col gap-[12px]">
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 10 }}
+                  >
+                    <div>脚本：</div>
+                    <div>
+                      <Input.TextArea
+                        defaultValue={`(function (ctx) {
+                          //TODO
+
+                          })(ctx)`}
+                        style={{ width: 160 }}
+                        rows={6}
+                        value={
+                          curComponent?.props?.[setting.name]?.config?.script
+                        }
+                        onChange={(e) =>
+                          scriptChange(setting.name, e.target.value)
+                        }
+                      />
+                    </div>
+                  </div>
                 </div>
               )}
             </Collapse.Panel>

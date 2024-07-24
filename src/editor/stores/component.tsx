@@ -21,7 +21,7 @@ interface Action {
   setMode: (mode: State["mode"]) => void;
 }
 
-export const useComponents = create<State & Action>((set) => ({
+export const useComponentsStore = create<State & Action>((set) => ({
   components: [],
   curComponentId: null,
   curComponent: null,

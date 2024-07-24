@@ -1,15 +1,18 @@
 import React, { useRef } from "react";
-import { Component, useComponents } from "../../stores/component";
+import { Component, useComponentsStore } from "../../stores/component";
 import { message } from "antd";
 import Space from "../../components/space";
 import { ItemType } from "../../item-type";
 import Button from "../../components/Button";
+import { useVariablesStore } from "../../stores/variable";
+import { usePageDataStore } from "../../stores/page-data";
 const ProdStage: React.FC = () => {
   const ComponentMap: { [key: string]: any } = {
     Button: Button,
     Space: Space,
   };
-  const { components } = useComponents();
+  const { components } = useComponentsStore();
+  const { variables } = useVariablesStore();
   const componentEventMap = {
     [ItemType.Button]: [
       {
@@ -18,7 +21,29 @@ const ProdStage: React.FC = () => {
       },
     ],
   };
+  const { data, setData } = usePageDataStore();
+
   const componentRefs = useRef<any>({});
+  /**
+   * 执行脚本函数。
+   *
+   * 该函数通过创建一个新函数并传入一个上下文对象来执行一段脚本代码。这个上下文对象包含了`setData`和`getComponentRef`两个方法，
+   * 供脚本代码使用。这种方式常用于在特定的上下文中执行动态脚本，例如在前端框架中更新数据或获取组件引用。
+   *
+   * @param script 要执行的脚本代码字符串。
+   */
+  const execScript = (script: string) => {
+    // 创建一个新函数，参数为"ctx"，代码体为传入的script字符串。
+    const func = new Function("ctx", script);
+    // 构建执行脚本所需的上下文对象，包含setData和getComponentRef方法。
+    const ctx = { setData, getComponentRef };
+    // 在构建的上下文中执行脚本函数。
+    func(ctx);
+  };
+
+  const getComponentRef = (componentId: number) => {
+    return componentRefs.current[componentId];
+  };
   const handleEvent = (component: Component) => {
     const props: any = {};
     if (componentEventMap[component.name]?.length) {
@@ -40,11 +65,41 @@ const ProdStage: React.FC = () => {
               if (component) {
                 component[config.method]?.();
               }
+            } else if (type === "setVariable") {
+              const { variable, value } = config;
+              if (variable && value) {
+                setData(variable, value);
+              }
+            } else if (type === "execScript") {
+              execScript(config.script);
             }
           };
         }
       });
     }
+    return props;
+  };
+  const formatProps = (component: Component) => {
+    console.log("component.props :>> ", component.props);
+    const props = Object.keys(component.props || {}).reduce<any>(
+      (prev, cur) => {
+        if (typeof component.props[cur] === "object") {
+          if (component.props[cur]?.type === "static") {
+            prev[cur] = component.props[cur].value;
+          } else if (component.props[cur]?.type === "variable") {
+            const variableName = component.props[cur]?.value;
+            const variable = variables.find(
+              (item) => item.name === variableName
+            );
+            prev[cur] = data[variableName] || variable?.defaultValue;
+          }
+        } else {
+          prev[cur] = component.props[cur];
+        }
+        return prev;
+      },
+      {}
+    );
     return props;
   };
   const renderComponent = (components: Component[]): React.ReactNode => {
@@ -53,7 +108,8 @@ const ProdStage: React.FC = () => {
         return null;
       }
       if (ComponentMap[component.name]) {
-        const props = handleEvent(component);
+        let props = handleEvent(component);
+        props = { ...props, ...formatProps(component) };
         return React.createElement(
           ComponentMap[component.name],
           {

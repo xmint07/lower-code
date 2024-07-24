@@ -1,7 +1,8 @@
 import { Form, Input, Select } from "antd";
 import React, { useEffect } from "react";
-import { useComponents } from "../../../stores/component";
+import SettingFormItemInput from "../../../common/setting-form-item/input";
 import { ItemType } from "../../../item-type";
+import { useComponentsStore } from "../../../stores/component";
 const componentSettingMap = {
   [ItemType.Button]: [
     {
@@ -14,7 +15,7 @@ const componentSettingMap = {
       ],
     },
     {
-      name: "children",
+      name: "text",
       type: "input",
       label: "文本",
     },
@@ -45,7 +46,7 @@ const ComponentAttr: React.FC = () => {
   const [form] = Form.useForm();
 
   const { curComponentId, updateComponentProps, curComponent } =
-    useComponents();
+    useComponentsStore();
 
   useEffect(() => {
     form.setFieldsValue(curComponent?.props);
@@ -60,10 +61,10 @@ const ComponentAttr: React.FC = () => {
     if (type === "select") {
       return <Select options={options} />;
     } else if (type === "input") {
-      return <Input />;
+      return <SettingFormItemInput />;
     }
   };
-  
+
   return (
     <div className="pt-[20px]">
       <Form
@@ -72,6 +73,9 @@ const ComponentAttr: React.FC = () => {
         labelCol={{ span: 8 }}
         wrapperCol={{ span: 14 }}
       >
+        <Form.Item label="组件id">
+          <Input value={curComponent?.id} disabled />
+        </Form.Item>
         {(componentSettingMap[curComponent!.name] || []).map((setting) => {
           return (
             <Form.Item name={setting.name} label={setting.label}>

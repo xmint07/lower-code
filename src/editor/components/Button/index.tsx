@@ -15,7 +15,7 @@ const Button = forwardRef((props: any, ref: any) => {
 
   return (
     <AntdButton loading={loading} {...props}>
-      {props.children}
+      {props.text}
     </AntdButton>
   );
 });

@@ -5,11 +5,11 @@ import Header from "./header/index";
 import Material from "./material/index";
 import Setting from "./setting/index";
 import Stage from "./stage/index";
-import { useComponents } from "../stores/component";
+import { useComponentsStore } from "../stores/component";
 import ProdStage from "./stage/prod";
 
 const Layout: React.FC = () => {
-  const { mode } = useComponents();
+  const { mode } = useComponentsStore();
   return (
     <div className="h-[100vh] flex flex-col">
       <div className="h-[50px] flex items-center bg-red-300">

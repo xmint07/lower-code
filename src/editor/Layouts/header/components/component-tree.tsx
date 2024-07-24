@@ -1,11 +1,11 @@
 import { Modal, Tree } from "antd";
-import { useComponents } from "../../../stores/component";
+import { useComponentsStore } from "../../../stores/component";
 interface ComponentTreeProps {
   open: boolean;
   onCancel: () => void;
 }
 const ComponentTree = ({ open, onCancel }: ComponentTreeProps) => {
-  const { components, setCurComponentId } = useComponents();
+  const { components, setCurComponentId } = useComponentsStore();
   const componentSelect = ([selectKey]: any[]) => {
     setCurComponentId(selectKey);
     onCancel && onCancel();

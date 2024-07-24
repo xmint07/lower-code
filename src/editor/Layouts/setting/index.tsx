@@ -1,12 +1,12 @@
 import { Segmented } from "antd";
 import { SegmentedValue } from "antd/es/segmented";
 import React, { useState } from "react";
-import { useComponents } from "../../stores/component";
+import { useComponentsStore } from "../../stores/component";
 import ComponentAttr from "./components/componentAtt";
 import ComponentEvent from "./components/componentEvent";
 
 const Setting: React.FC = () => {
-  const { curComponentId, curComponent } = useComponents();
+  const { curComponentId, curComponent } = useComponentsStore();
   const [key, setKey] = useState<SegmentedValue>("属性");
   if (!curComponentId || !curComponent) return null;
   return (
