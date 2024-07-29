@@ -27,6 +27,11 @@ const Material: React.FC = () => {
         description="间距"
         onDragEnd={onDragEnd}
       />
+      <ComponentItem
+        name={ItemType.RemoteComponent}
+        description="远程组件"
+        onDragEnd={onDragEnd}
+      />
     </div>
   );
 };

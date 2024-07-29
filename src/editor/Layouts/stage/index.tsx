@@ -5,6 +5,7 @@ import Space from "../../components/space";
 import { ItemType } from "../../item-type";
 import { useComponentsStore } from "../../stores/component";
 import Button from "../../components/Button";
+import { loadRemoteComponent } from "../../utils/utils";
 
 interface Component {
   id: number;
@@ -16,10 +17,16 @@ interface Component {
 const ComponentMap: { [key: string]: any } = {
   Button: Button,
   Space: Space,
+  [ItemType.RemoteComponent]: React.lazy(() =>
+    loadRemoteComponent(
+      "https://cdn.jsdelivr.net/npm/xmint07-remote-component@1.0.1/dist/bundle.umd.js"
+    )
+  ),
 };
 
 const Stage: React.FC = () => {
-  const { components, curComponentId, setCurComponentId } = useComponentsStore();
+  const { components, curComponentId, setCurComponentId } =
+    useComponentsStore();
   const selectedMaskRef: any = useRef(null);
   useEffect(() => {
     const createMask = (e: Event) => {
@@ -98,7 +105,7 @@ const Stage: React.FC = () => {
     });
   };
   const [{ canDrop }, drop] = useDrop(() => ({
-    accept: [ItemType.Button, ItemType.Space],
+    accept: [ItemType.Button, ItemType.Space, ItemType.RemoteComponent],
     drop(_, monitor) {
       const didDrop = monitor.didDrop();
       if (didDrop) {

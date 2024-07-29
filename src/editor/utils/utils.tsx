@@ -1,3 +1,4 @@
+import React from "react";
 import { Component } from "../stores/component";
 
 /**
@@ -29,5 +30,30 @@ const getComponentById = (
   // 如果遍历完所有组件仍未找到匹配的组件，返回null
   return null;
 };
-
-export { getComponentById };
+/**
+ * 加载远程组件
+ *
+ * @param url - 组件的URL地址
+ * @returns 返回一个Promise，解析后的结果是加载的模块，默认导出的对象
+ */
+const loadRemoteComponent = async (url: string) => {
+  // 通过fetch获取脚本内容
+  const script = await fetch(url).then((res) => res.text());
+  // 初始化模块对象
+  const module = { exports: {} };
+  // 初始化导出对象
+  const exports = {};
+  // 模拟require方法
+  const require = (id: string) => {
+    if (id === "react") {
+      return React;
+    }
+  };
+  const process = { env: { NODE_ENV: "production" } };
+  // 创建Function实例并执行
+  const func = new Function("module", "exports", "require", "process", script);
+  func(module, exports, require);
+  // 返回模块默认导出的对象
+  return { default: module.exports, process } as any;
+};
+export { getComponentById, loadRemoteComponent };

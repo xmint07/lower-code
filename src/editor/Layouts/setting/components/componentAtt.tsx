@@ -41,6 +41,13 @@ const componentSettingMap = {
       ],
     },
   ],
+  [ItemType.RemoteComponent]: [
+    {
+      name: "text",
+      type: "input",
+      label: "文本",
+    },
+  ],
 };
 const ComponentAttr: React.FC = () => {
   const [form] = Form.useForm();

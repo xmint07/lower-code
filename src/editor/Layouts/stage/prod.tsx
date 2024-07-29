@@ -6,10 +6,16 @@ import { ItemType } from "../../item-type";
 import Button from "../../components/Button";
 import { useVariablesStore } from "../../stores/variable";
 import { usePageDataStore } from "../../stores/page-data";
+import { loadRemoteComponent } from "../../utils/utils";
 const ProdStage: React.FC = () => {
   const ComponentMap: { [key: string]: any } = {
     Button: Button,
     Space: Space,
+    [ItemType.RemoteComponent]: React.lazy(() =>
+      loadRemoteComponent(
+        "https://cdn.jsdelivr.net/npm/xmint07-remote-component@1.0.1/dist/bundle.umd.js"
+      )
+    ),
   };
   const { components } = useComponentsStore();
   const { variables } = useVariablesStore();
@@ -126,6 +132,12 @@ const ProdStage: React.FC = () => {
       return null;
     });
   };
-  return <div>{renderComponent(components)}</div>;
+  return (
+    <div>
+      <React.Suspense fallback="...loading">
+        {renderComponent(components)}
+      </React.Suspense>
+    </div>
+  );
 };
 export default ProdStage;
